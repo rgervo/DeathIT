@@ -167,6 +167,7 @@ end
 -- when the Cancel button is clicked
 function DeathIT:OnCancel()
 	self.wndMain:Close() -- hide the window
+	Print("type /deathit to reopen")
 end
 
 -----------------------------------------------------------------------------------------------
