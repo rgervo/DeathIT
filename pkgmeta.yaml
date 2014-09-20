@@ -1,5 +1,4 @@
-package-as: DeathIT
+package-as: DeathIT-1.3
 ignore: 
 	-CHANGES.txt
 	-README.md
-@project-author@ rgervo
