@@ -20,5 +20,5 @@
     </Form>
     <Form Class="Window" LAnchorPoint="0.5" LAnchorOffset="-288" TAnchorPoint="0.25" TAnchorOffset="-54" RAnchorPoint="0.5" RAnchorOffset="312" BAnchorPoint="0.25" BAnchorOffset="122" RelativeToClient="1" Font="Default" Text="" Template="Default" Name="SecondsOverlay" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" BGColor="ffffffff" TextColor="ffffffff" TextId="" TooltipColor="" Tooltip="" Sizable="0" IgnoreMouse="1" HideInEditor="0">
         <Control Class="Window" LAnchorPoint="0" LAnchorOffset="-44" TAnchorPoint="0.25" TAnchorOffset="-53" RAnchorPoint="1" RAnchorOffset="44" BAnchorPoint="1" BAnchorOffset="-101" RelativeToClient="1" Font="Subtitle" Text="!10 Seconds Till Res Wave!" Template="Default" Name="TextWindow" BGColor="white" TextColor="ChatParty" TextId="" DT_CENTER="1" DT_VCENTER="1" TooltipColor="" IgnoreMouse="1" AutoScaleText="1" DT_RIGHT="0" TooltipFont="&lt;Default Font&gt;" Tooltip=""/>
-     </Form>
+    </Form>
 </Forms>

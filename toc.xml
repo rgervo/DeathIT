@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
 <Addon Author="swags" APIVersion="9" Name="DeathIT" Description=".">
-=======
-<Addon Author="swags" APIVersion="9" Name="DeathIT" Description="  ">
->>>>>>> origin/master
     <Script Name="DeathIT.lua"/>
     <Form Name="DeathIT.xml"/>
 </Addon>
