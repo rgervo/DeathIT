@@ -20,6 +20,7 @@ local DeathIT = {}
 -----------------------------------------------------------------------------------------------
 local debug = false
 local shoutMuted = false
+
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
@@ -91,9 +92,13 @@ function DeathIT:OnDocLoaded()
 		end
 		
 		if self.locSavedShout then
-			self.wndMain:FindChild("Shout"):SetCheck(self.locSavedShout)
+			self.wndMain:FindChild("Shout"):SetCheck(false)
 			shoutMuted = self.locSavedShout
-		end
+		else 
+			self.wndMain:FindChild("Shout"):SetCheck(true)
+			shoutMuted = self.locSavedShout
+		end	
+		self:Debug("shout: ", tostring(self.locSavedShout))
 		
 		self.fTimeBeforeRezable = 30000
 		self.maskSpawn = 0		
