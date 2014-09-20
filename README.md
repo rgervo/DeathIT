@@ -1,8 +1,10 @@
 DeathIT
 =======
+WildStar
+This is an addon for tracking the resurrection waves in Walatiki.
+Has an on screen visual as well as a UI timer window
 
-Simple Wildstar addon for tracking bg death ressurection wave
-
-To move the window mouseover right underneath the bottom boarder.
+Options
+1. Shouts out when there is 10 secs 
 
 %appdata%\ncsoft\wildstar\addons
