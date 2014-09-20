@@ -18,20 +18,14 @@ local DeathIT = {}
 -----------------------------------------------------------------------------------------------
 -- Local Default Settings
 -----------------------------------------------------------------------------------------------
-local defaultSettings = {
-	  wndPosition = {
-		[1] = {0, -0, 0, -0},
-	  },
-	-- other settings
-	debug = true,
-	
-}
-
+local debug = false
+local shoutMuted = false
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
 
- 
+ local knSaveVersion = 1
+
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
@@ -71,12 +65,14 @@ function DeathIT:OnDocLoaded()
 
 	if self.xmlDoc ~= nil and self.xmlDoc:IsLoaded() then
 	    self.wndMain = Apollo.LoadForm(self.xmlDoc, "DeathITForm", nil, self)
+		self.SecondsOverlay = Apollo.LoadForm(self.xmlDoc, "SecondsOverlay", nil, self)
 		if self.wndMain == nil then
 			Apollo.AddAddonErrorText(self, "Could not load the main window for some reason.")
 			return
 		end
 		
 	    self.wndMain:Show(true, true)
+		self.SecondsOverlay:Show(false, false)
 
 		-- if the xmlDoc is no longer needed, you should set it to nil
 		self.xmlDoc = nil
@@ -84,11 +80,21 @@ function DeathIT:OnDocLoaded()
 		-- Register handlers for events, slash commands and timer, etc.
 		Apollo.RegisterSlashCommand("deathit", "OnDeathITOn", self)
 		Apollo.RegisterEventHandler("ChatMessage","OnChatMessage", self)
+		
+		-- Timers
 		Apollo.RegisterTimerHandler("DeathTimer", "OnDeathTimer", self)
+		Apollo.RegisterTimerHandler("ClearSecondsAlert", "SecondsAlert", self)
 		
 		-- Do additional Addon initialization here
-		self.nTimerProgress = nil
-		self.bDead = false
+		if self.locSavedWindowLoc then
+			self.wndMain:MoveToLocation(self.locSavedWindowLoc)
+		end
+		
+		if self.locSavedShout then
+			self.wndMain:FindChild("Shout"):SetCheck(self.locSavedShout)
+			shoutMuted = self.locSavedShout
+		end
+		
 		self.fTimeBeforeRezable = 30000
 		self.maskSpawn = 0		
 		
@@ -100,13 +106,50 @@ function DeathIT:OnDocLoaded()
 	end
 end
 
+---------------------------------------------------------------------------------------------------
+-- Save / Restore
+---------------------------------------------------------------------------------------------------
+function DeathIT:OnSave(eType)
+	if eType ~= GameLib.CodeEnumAddonSaveLevel.Account then
+		return
+	end
+	
+	local tSaveData = 
+	{
+		
+		tWindowLocation = self.wndMain and self.wndMain:GetLocation():ToTable() or self.locSavedWindowLoc:ToTable(),
+		nSaveVersion = knSaveVersion,
+		tSaveShout = shoutMuted,
+	}
+	return tSaveData
+end
+
+function DeathIT:OnRestore(eType, tSavedData)
+	self.tSavedData = tSavedData
+	if tSavedData and tSavedData.nSaveVersion == knSaveVersion then
+		self.locSavedWindowLoc = WindowLocation.new(tSavedData.tWindowLocation)
+		self.locSavedShout = tSavedData.tSaveShout
+	end
+		
+end
+
 -----------------------------------------------------------------------------------------------
 -- DeathIT Functions
 -----------------------------------------------------------------------------------------------
+function DeathIT:SecondsAlert()
+	self.SecondsOverlay:FindChild("TextWindow"):SetText("")
+end
+
 function DeathIT:OnDeathTimer()
 
 if self.fTimeBeforeRezable > 0 then
 	self.fTimeBeforeRezable = self.fTimeBeforeRezable - 100
+	if self.fTimeBeforeRezable == 10000 then 
+		self:ShoutWaveTime()
+		self.SecondsOverlay:Show(true, true)
+		self.SecondsOverlay:FindChild("TextWindow"):SetText("!10 Seconds Till Res Wave!")
+		Apollo.CreateTimer("ClearSecondsAlert", 3, false)
+	end
 else
 	self.fTimeBeforeRezable = 30000
 end
@@ -138,75 +181,44 @@ function DeathIT:OnChatMessage(channelCurrent, tMessage)
 		self.maskSpawn = 0
 				
 	end
-
+		
 	if channelCurrent:GetName() == "Datachron" then		
 		self:Debug("Datachron: ", "true")
 		
 		-- Moodie mask spawn. Fist spawn
 		if message == "A Moodie Mask has been unearthed!" and self.maskSpawn == 0 then
 			self.maskSpawn = self.maskSpawn + 1
-			self:Debug("Start timer", "mask timer")
+			self:Debug("Start timer: ", "mask timer")
+			self.fTimeBeforeRezable = 28000 
 			-- start timer
 			Apollo.StartTimer("DeathTimer")
-		else 
-			self.maskSpawn = self.maskSpawn + 1
 		end
 		
 		self.Debug("TimerCount: ", self.maskSpawn) 
 	end
 
 end
---[[
-function BGShouter:OnChatMessage(channelCurrent, tMessage)
-	local message = tMessage.arMessageSegments[1].strText
-	
-	if channelCurrent:GetName() == "Instance" then	
-		self:checkVersion(message)
-	end
 
-	if 
-		channelCurrent:GetName() == "System" or -- english/german
-		channelCurrent:GetName() == "Système" -- french
-	then	
-		self:gameCheck(message)	
-	end
+function DeathIT:ShoutWaveTime()
+	DeathIT:sendInstanceMessage("10 Seconds")
+end
 
-	if 
-		channelCurrent:GetName() == "System" or -- english/german
-		channelCurrent:GetName() == "Système" -- french
-	then	
-		if
-			message == "You have been kicked by the server." or -- english
-			string.find(message, "Vous avez été expulsé par le serveur") ~= nil or -- french
-			message == "Deine Verbindung mit dem Server wurde getrennt." -- german
-		then
-			if self.hidden then
-				self:OnClose()
+function DeathIT:sendInstanceMessage(message)
+	if shoutMuted == false then
+		for _,channel in pairs(ChatSystemLib.GetChannels()) do
+			if channel:GetType() == ChatSystemLib.ChatChannel_Instance then
+				channel:Send("[RES WAVE IN]: " .. message)
 			end
-			self:ClearTracker()
-			self:prestigeCheck()
-		end	
-	end
-
-	if 
-		channelCurrent:GetName() == "Datachron" or -- english
-		channelCurrent:GetName() == "Infochron" -- german/french
-	then		
-		sendDebugMessage("datachron")
-		self:scoreCount(message)				
-		self:moodieMaskCheck(message)		
-		self:bloodsworn(message)
+		end
 	end
 end
-]]--
-
 -- on SlashCommand "/deathit"
 function DeathIT:OnDeathITOn()
 	self.wndMain:Invoke() -- show the window
 end
 
 -----------------------------------------------------------------------------------------------
--- Helper Time Functions 
+-- Time Helper Functions 
 -----------------------------------------------------------------------------------------------
 function DeathIT:HelperCalcTimeSecondsMS(fTimeMS)
 	local fTime = math.floor(fTimeMS / 1000)
@@ -238,10 +250,18 @@ function DeathIT:HelperCalcTime(fSeconds)
 	return String_GetWeaselString(Apollo.GetString("CRB_TimeMinsToMS"), math.floor(fSeconds / 60), strOutputSeconds)
 end
 
-
 -----------------------------------------------------------------------------------------------
 -- DeathIT Form Functions
 -----------------------------------------------------------------------------------------------
+function DeathIT:OnMute()
+	if shoutMuted == false then
+		shoutMuted = true
+	else
+		shoutMuted = false
+	end
+end
+
+
 function DeathIT:OnStartTimer()
 	Apollo.StartTimer("DeathTimer")
 end
@@ -249,6 +269,7 @@ end
 function DeathIT:OnStopTimer()
 	Apollo.StopTimer("DeathTimer")
 	self.fTimeBeforeRezable = 30000
+	self.maskSpawn = 0
 	self.wndMain:FindChild("Title"):SetText("0.0 seconds")
 end
 
@@ -263,12 +284,12 @@ end
 -----------------------------------------------------------------------------------------------
 function DeathIT:Debug(message, error)
 	if message == nil then 
-		message = "nil"
+		message = "nil - "
 	elseif error == nil then 
-		error = "nil"
+		error = " nil "
 	end
 		
-	if defaultSettings.debug == true then
+	if debug == true then
 		Print(message .. error)
 	end
 end
