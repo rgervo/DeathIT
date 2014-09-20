@@ -2,7 +2,6 @@
 -- Wildstar Client Lua Script for DeathIT
 -- Swags - Pergo - Exile - ralph@rgnix.com
 -----------------------------------------------------------------------------------------------
- 
 require "Window"
 require "Tooltip"
 require "XmlDoc"
