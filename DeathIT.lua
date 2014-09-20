@@ -212,7 +212,7 @@ function DeathIT:sendInstanceMessage(message)
 	if shoutMuted == false then
 		for _,channel in pairs(ChatSystemLib.GetChannels()) do
 			if channel:GetType() == ChatSystemLib.ChatChannel_Instance then
-				channel:Send("[RES WAVE IN]: " .. message)
+				channel:Send("[ " .. shoutCount .. " ]" .. "[RES WAVE IN]: " .. message)
 			end
 		end
 	end
