@@ -37,7 +37,6 @@ function DeathIT:new(o)
     self.__index = self 
 
     -- initialize variables here
-
     return o
 end
 
