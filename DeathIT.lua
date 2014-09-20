@@ -19,6 +19,7 @@ local DeathIT = {}
 -----------------------------------------------------------------------------------------------
 local debug = false
 local shoutMuted = false
+local shoutCount = 0
 
 -----------------------------------------------------------------------------------------------
 -- Constants
@@ -181,6 +182,7 @@ function DeathIT:OnChatMessage(channelCurrent, tMessage)
 		self.fTimeBeforeRezable = 30000
 		self.wndMain:FindChild("Title"):SetText("0.0 seconds")
 		self.maskSpawn = 0
+		self.shoutCount = 0
 				
 	end
 		
@@ -206,6 +208,7 @@ function DeathIT:ShoutWaveTime()
 end
 
 function DeathIT:sendInstanceMessage(message)
+	shoutCount = shoutCount + 1
 	if shoutMuted == false then
 		for _,channel in pairs(ChatSystemLib.GetChannels()) do
 			if channel:GetType() == ChatSystemLib.ChatChannel_Instance then
